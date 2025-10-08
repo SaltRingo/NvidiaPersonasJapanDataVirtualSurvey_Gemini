@@ -9,6 +9,10 @@ project.lock.json
 .env
 appsettings.Development.json
 
+# Data files (too large for GitHub)
+PersonasData/
+*.parquet
+
 .vscode/
 
 # User-specific files

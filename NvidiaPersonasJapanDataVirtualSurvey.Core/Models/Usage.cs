@@ -1,21 +1,10 @@
-using System.Text.Json.Serialization;
-
 namespace NvidiaPersonasJapanDataVirtualSurvey.Core.Models;
 
-internal record Usage
+public record Usage
 {
-    [JsonPropertyName("completion_tokens")]
-    public int CompletionTokens { get; init; }
+    public int CompletionTokens { get; set; }
 
-    [JsonPropertyName("prompt_tokens")]
-    public int PromptTokens { get; init; }
+    public int PromptTokens { get; set; }
 
-    [JsonPropertyName("total_tokens")]
-    public int TotalTokens { get; init; }
-
-    [JsonPropertyName("completion_tokens_details")]
-    public CompletionTokensDetails? CompletionTokensDetails { get; init; }
-
-    [JsonPropertyName("prompt_tokens_details")]
-    public PromptTokensDetails? PromptTokensDetails { get; init; }
+    public int TotalTokens => PromptTokens + CompletionTokens;
 }

@@ -7,8 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.1" />
     <PackageReference Include="Parquet.Net" Version="5.2.0" />
+    <PackageReference Include="System.Net.Http.Json" Version="9.0.1" />
   </ItemGroup>
 
 </Project>
