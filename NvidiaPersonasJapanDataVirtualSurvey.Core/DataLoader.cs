@@ -18,7 +18,7 @@ internal class DataLoader(IProgress<string>? progress = null)
     const string dataDirName = "PersonasData";
 
 
-    internal async Task<IReadOnlyList<PersonaRecord>> LoadAsync(int sampleSize = 0)
+    internal async Task<IReadOnlyList<PersonaRecord>> LoadAsync(int sampleSize = 0, int? randomSeed = null)
     {
         // TODO: 引数でサンプリング時のフィルター条件を指定できるようにする
 
@@ -105,13 +105,18 @@ internal class DataLoader(IProgress<string>? progress = null)
         {
             // TODO:全件メモリにロードしてからサンプリングするのは効率的ではないので、本来は読み込み時にサンプリングしたい（複数ファイルに分かれてるので完全な一様性を保ったままサンプリングするのは難しそう）
 
+            // ランダム生成器を作成（シード値指定で再現性を確保）
+            var random = randomSeed.HasValue ? new Random(randomSeed.Value) : Random.Shared;
+            
             // 部分的な Fisher–Yates シャッフル
             for (int i = 0; i < sampleSize; i++)
             {
-                int j = Random.Shared.Next(i, records.Count);
+                int j = random.Next(i, records.Count);
                 (records[i], records[j]) = (records[j], records[i]);
             }
-            progress?.Report($"Collected {records.Count} persona records (returning {sampleSize}).");
+            
+            var seedInfo = randomSeed.HasValue ? $" (seed: {randomSeed.Value})" : " (random)";
+            progress?.Report($"Collected {records.Count} persona records (returning {sampleSize}){seedInfo}.");
             return records.Take(sampleSize).ToList();
         }
     }

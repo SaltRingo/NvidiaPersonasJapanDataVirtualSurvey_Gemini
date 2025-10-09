@@ -52,7 +52,12 @@ cp .env.example .env
 # .env ファイルを編集してAPIキーを設定
 GEMINI_API_KEY=your_actual_api_key_here
 GEMINI_MODEL=gemini-2.5-flash
+# アンケート設定
 SAMPLE_SIZE=5
+
+# ペルソナ選択設定（実験用）
+RANDOM_SEED=12345  # 固定値を設定すると毎回同じペルソナが選ばれる
+```
 ```
 
 #### 方法B: dotnet user-secrets（セキュア）
@@ -78,6 +83,26 @@ set GEMINI_MODEL=gemini-2.5-flash
 - **APIキーをソースコードに直接書かないでください**
 - `.env` ファイルは `.gitignore` に含まれており、GitHubにプッシュされません
 - 本番環境では `dotnet user-secrets` または環境変数の使用を推奨
+
+### 🔬 実験・比較用機能
+
+**同じペルソナで複数回テスト**（条件変更の影響を確認）:
+```bash
+# .envで固定シード値を設定
+RANDOM_SEED=12345
+
+# 毎回同じ5人のペルソナが選ばれる
+dotnet run
+```
+
+**ランダムペルソナで多様性テスト**:
+```bash
+# .envでRANDOM_SEEDをコメントアウト
+# RANDOM_SEED=12345
+
+# 毎回異なるペルソナが選ばれる
+dotnet run
+```
 
 ### 注意事項
 

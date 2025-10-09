@@ -43,11 +43,27 @@ var apiKey = GetConfigValue("GEMINI_API_KEY")
 var model = GetConfigValue("GEMINI_MODEL") ?? "gemini-2.5-flash";
 var sampleSize = int.Parse(GetConfigValue("SAMPLE_SIZE") ?? "5");
 
+// シード値の取得（オプション）
+int? randomSeed = null;
+var seedValue = GetConfigValue("RANDOM_SEED");
+if (!string.IsNullOrWhiteSpace(seedValue) && int.TryParse(seedValue, out var seed))
+{
+    randomSeed = seed;
+}
+
 Console.WriteLine($"使用モデル: {model}");
 Console.WriteLine($"サンプル数: {sampleSize}");
+if (randomSeed.HasValue)
+{
+    Console.WriteLine($"🔒 固定ペルソナ選択 (シード値: {randomSeed.Value})");
+}
+else
+{
+    Console.WriteLine($"🎲 ランダムペルソナ選択");
+}
 Console.WriteLine();
 
-var service = await SurveyService.CreateAsync(apiKey, model, sampleSize, new Progress<string>(OnProgressChanged));
+var service = await SurveyService.CreateAsync(apiKey, model, sampleSize, randomSeed, new Progress<string>(OnProgressChanged));
 
 // 設定値取得のヘルパー関数
 string? GetConfigValue(string key)
