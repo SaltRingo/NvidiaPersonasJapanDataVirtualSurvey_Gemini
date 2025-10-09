@@ -100,9 +100,9 @@ for (int i = 0; i < surveys.Count; i++)
     
     foreach (var answer in result.Answers)
     {
-        Console.WriteLine($"{answer.Persona.Age}歳 / {answer.Persona.Sex} / {answer.Persona.Occupation} / {answer.Persona.Prefecture} 在住");
-        Console.WriteLine($"Answer: {answer.Answer}");
-        Console.WriteLine("----------------------");
+        DisplayPersonaDetails(answer.Persona);
+        Console.WriteLine($"🗣️  **回答**: {answer.Answer}");
+        Console.WriteLine(new string('=', 80));
     }
     Console.WriteLine("========================");
     
@@ -123,5 +123,51 @@ string GetQuestionText(ISurveyRequest survey)
         OptionSelectSurveyRequest osr => osr.GetUserPrompt().Split('\n')[0],
         _ => "質問"
     };
+}
+
+// ペルソナ詳細情報を表示するヘルパー関数
+void DisplayPersonaDetails(PersonaRecord persona)
+{
+    Console.WriteLine($"👤 **ペルソナ詳細**");
+    Console.WriteLine($"   📊 基本情報: {persona.Age}歳 / {persona.Sex} / {persona.Prefecture} 在住");
+    Console.WriteLine($"   💼 職業: {persona.Occupation}");
+    
+    if (!string.IsNullOrEmpty(persona.MaritalStatus))
+        Console.WriteLine($"   👨‍👩‍👧‍👦 家族構成: {persona.MaritalStatus}");
+    
+    if (!string.IsNullOrEmpty(persona.EducationLevel))
+        Console.WriteLine($"   🎓 学歴: {persona.EducationLevel}");
+    
+    if (!string.IsNullOrEmpty(persona.CulturalBackground))
+    {
+        Console.WriteLine($"   🌏 文化的背景: {TruncateText(persona.CulturalBackground, 100)}");
+    }
+    
+    if (!string.IsNullOrEmpty(persona.HobbiesAndInterests))
+    {
+        Console.WriteLine($"   🎯 趣味・興味: {TruncateText(persona.HobbiesAndInterests, 100)}");
+    }
+    
+    if (!string.IsNullOrEmpty(persona.SkillsAndExpertise))
+    {
+        Console.WriteLine($"   💡 スキル・専門性: {TruncateText(persona.SkillsAndExpertise, 100)}");
+    }
+    
+    if (!string.IsNullOrEmpty(persona.CareerGoalsAndAmbitions))
+    {
+        Console.WriteLine($"   🚀 キャリア目標: {TruncateText(persona.CareerGoalsAndAmbitions, 100)}");
+    }
+    
+    Console.WriteLine($"   🆔 UUID: {persona.Uuid}");
+    Console.WriteLine();
+}
+
+// テキストを指定した長さで切り詰める関数
+string TruncateText(string text, int maxLength)
+{
+    if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+        return text;
+    
+    return text.Substring(0, maxLength) + "...";
 }
 Console.ReadLine();

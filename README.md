@@ -138,6 +138,9 @@ cd NvidiaPersonasJapanDataVirtualSurvey.Console
 dotnet run
 ```
 
+自分用：
+dotnet run --project NvidiaPersonasJapanDataVirtualSurvey.Console
+
 プログラムは自動的に設定された値を読み込み、アンケートを実行します。
 
 ## 使用例
