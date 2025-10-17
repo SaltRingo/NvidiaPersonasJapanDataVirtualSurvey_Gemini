@@ -63,7 +63,47 @@ else
 }
 Console.WriteLine();
 
-var service = await SurveyService.CreateAsync(apiKey, model, sampleSize, randomSeed, new Progress<string>(OnProgressChanged));
+// コマンドライン引数の簡易パース
+string? prefectureArg = null;
+string? educationArg = null;
+string? sexArg = null;
+int? cliSampleSize = null;
+
+for (int i = 0; i < args.Length; i++)
+{
+    var a = args[i];
+    if ((a == "--prefecture" || a == "-p") && i + 1 < args.Length)
+    {
+        prefectureArg = args[i + 1];
+        i++;
+    }
+    else if ((a == "--education" || a == "-e") && i + 1 < args.Length)
+    {
+        educationArg = args[i + 1];
+        i++;
+    }
+    else if ((a == "--sex" || a == "-s") && i + 1 < args.Length)
+    {
+        sexArg = args[i + 1];
+        i++;
+    }
+    else if ((a == "--sample-size" || a == "-n") && i + 1 < args.Length && int.TryParse(args[i + 1], out var n))
+    {
+        cliSampleSize = n;
+        i++;
+    }
+}
+
+// フィルタが指定されていればそれを優先、なければ sampleSize を使ってランダム抽出
+var filters = (prefectureArg, educationArg, sexArg) switch
+{
+    (null, null, null) => null,
+    _ => new FilterOptions(prefectureArg, educationArg, sexArg)
+};
+
+var effectiveSampleSize = cliSampleSize ?? sampleSize;
+
+var service = await SurveyService.CreateAsync(apiKey, model, effectiveSampleSize, randomSeed, filters, new Progress<string>(OnProgressChanged));
 
 // 設定値取得のヘルパー関数
 string? GetConfigValue(string key)

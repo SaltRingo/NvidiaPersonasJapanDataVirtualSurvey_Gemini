@@ -21,10 +21,10 @@ public class SurveyService
         this.personaList = personaList;
     }
 
-    public static async Task<SurveyService> CreateAsync(string apiKey, string model, int SampleSize = 20, int? randomSeed = null, IProgress<string>? progress = null)
+    public static async Task<SurveyService> CreateAsync(string apiKey, string model, int SampleSize = 20, int? randomSeed = null, FilterOptions? filters = null, IProgress<string>? progress = null)
     {
         var loader = new DataLoader(progress);
-        var personaList = await loader.LoadAsync(SampleSize, randomSeed);
+        var personaList = await loader.LoadAsync(SampleSize, randomSeed, filters);
         
         return new SurveyService(apiKey, model, progress, personaList.ToList());
     }

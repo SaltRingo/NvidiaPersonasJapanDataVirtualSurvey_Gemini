@@ -8,6 +8,7 @@ using Parquet;
 using Parquet.Data;
 
 namespace NvidiaPersonasJapanDataVirtualSurvey.Core;
+public sealed record FilterOptions(string? Prefecture = null, string? EducationLevel = null, string? Sex = null);
 
 internal class DataLoader(IProgress<string>? progress = null)
 {
@@ -18,9 +19,9 @@ internal class DataLoader(IProgress<string>? progress = null)
     const string dataDirName = "PersonasData";
 
 
-    internal async Task<IReadOnlyList<PersonaRecord>> LoadAsync(int sampleSize = 0, int? randomSeed = null)
+    internal async Task<IReadOnlyList<PersonaRecord>> LoadAsync(int sampleSize = 0, int? randomSeed = null, FilterOptions? filters = null)
     {
-        // TODO: 引数でサンプリング時のフィルター条件を指定できるようにする
+        // フィルターが指定されている場合は該当レコードのみ返す（サンプリングは行わない）
 
         var files = CollectParquetFiles(dataDirName);
         if (files.Count == 0)
@@ -94,6 +95,19 @@ internal class DataLoader(IProgress<string>? progress = null)
                     records.Add(record);
                 }
             }
+        }
+
+        // フィルタが指定されている場合は、それにマッチする全件を返す
+        if (filters is not null && (!string.IsNullOrWhiteSpace(filters.Prefecture) || !string.IsNullOrWhiteSpace(filters.EducationLevel) || !string.IsNullOrWhiteSpace(filters.Sex)))
+        {
+            var filtered = records.Where(r =>
+                (string.IsNullOrWhiteSpace(filters.Prefecture) || string.Equals(r.Prefecture ?? string.Empty, filters.Prefecture, StringComparison.OrdinalIgnoreCase))
+                && (string.IsNullOrWhiteSpace(filters.EducationLevel) || string.Equals(r.EducationLevel ?? string.Empty, filters.EducationLevel, StringComparison.OrdinalIgnoreCase))
+                && (string.IsNullOrWhiteSpace(filters.Sex) || string.Equals(r.Sex ?? string.Empty, filters.Sex, StringComparison.OrdinalIgnoreCase))
+            ).ToList();
+
+            progress?.Report($"Applied filters. Matched {filtered.Count} persona records.");
+            return filtered;
         }
 
         if (sampleSize <= 0 || sampleSize >= records.Count)
