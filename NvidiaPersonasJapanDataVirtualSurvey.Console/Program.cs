@@ -158,7 +158,25 @@ if (finalResult is not null)
     // CSV に結果を保存（UTF-8 with BOM）
 try
 {
-    var outFile = Path.Combine(Directory.GetCurrentDirectory(), "survey_results.csv");
+    // 質問文の先頭10文字をファイル名に使う（サニタイズしてタイムスタンプを付与）
+    string MakeFileNameFromQuestion(string question)
+    {
+        if (string.IsNullOrWhiteSpace(question)) question = "survey";
+        var trimmed = question.Trim();
+        var head = trimmed.Length <= 10 ? trimmed : trimmed.Substring(0, 10);
+        // サニタイズ: ファイル名に使えない文字を置換
+        var invalid = System.IO.Path.GetInvalidFileNameChars();
+        foreach (var c in invalid)
+        {
+            head = head.Replace(c, '_');
+        }
+        // さらに空白やカンマなどをアンダースコアに
+        head = System.Text.RegularExpressions.Regex.Replace(head, "[\\s,]+", "_");
+        var ts = DateTime.Now.ToString("yyyyMMddHHmmss");
+        return $"survey_{head}_{ts}.csv";
+    }
+
+    var outFile = Path.Combine(Directory.GetCurrentDirectory(), MakeFileNameFromQuestion(userQuestion));
         using var fs = new FileStream(outFile, FileMode.Create, FileAccess.Write, FileShare.None);
         using var sw = new StreamWriter(fs, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
 
