@@ -97,7 +97,7 @@ internal class DataLoader(IProgress<string>? progress = null)
             }
         }
 
-        // フィルタが指定されている場合は、それにマッチする全件を返す
+        // フィルタが指定されている場合は、それにマッチするレコードに対してサンプリングを行う（必要な場合）
         if (filters is not null && (!string.IsNullOrWhiteSpace(filters.Prefecture) || !string.IsNullOrWhiteSpace(filters.EducationLevel) || !string.IsNullOrWhiteSpace(filters.Sex)))
         {
             var filtered = records.Where(r =>
@@ -107,7 +107,27 @@ internal class DataLoader(IProgress<string>? progress = null)
             ).ToList();
 
             progress?.Report($"Applied filters. Matched {filtered.Count} persona records.");
-            return filtered;
+
+            // サンプリング不要な場合はそのまま返す
+            if (sampleSize <= 0 || sampleSize >= filtered.Count)
+            {
+                progress?.Report($"Returning {filtered.Count} filtered persona records.");
+                return filtered;
+            }
+
+            // ランダム生成器を作成（シード値指定で再現性を確保）
+            var randomForFiltered = randomSeed.HasValue ? new Random(randomSeed.Value) : Random.Shared;
+
+            // 部分的な Fisher–Yates シャッフル
+            for (int i = 0; i < sampleSize; i++)
+            {
+                int j = randomForFiltered.Next(i, filtered.Count);
+                (filtered[i], filtered[j]) = (filtered[j], filtered[i]);
+            }
+
+            var seedInfoF = randomSeed.HasValue ? $" (seed: {randomSeed.Value})" : " (random)";
+            progress?.Report($"Filtered {filtered.Count} persona records (returning {sampleSize}){seedInfoF}.");
+            return filtered.Take(sampleSize).ToList();
         }
 
         if (sampleSize <= 0 || sampleSize >= records.Count)
