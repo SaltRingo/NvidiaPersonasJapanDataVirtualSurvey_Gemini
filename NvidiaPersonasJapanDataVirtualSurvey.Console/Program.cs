@@ -112,16 +112,18 @@ string? GetConfigValue(string key)
            ?? Environment.GetEnvironmentVariable(key); // .envファイル経由
 }
 
-// 複数のアンケートを順次実行する例
+// ターミナルから自由入力で質問を受け取り、その質問をフィルタ対象のペルソナ全員（またはランダム抽出）に対して実行する
+Console.WriteLine("質問を入力してください（1 行で Enter）：");
+var userQuestion = Console.ReadLine();
+if (string.IsNullOrWhiteSpace(userQuestion))
+{
+    Console.WriteLine("質問が入力されませんでした。処理を終了します。");
+    return;
+}
+
 var surveys = new List<ISurveyRequest>
 {
-    new FreeTextSurveyRequest("昨今のAI(LLM)の目覚ましい進化についてどう思いますか？", 300),
-    new YesNoSurveyRequest("現在の日本において金融緩和政策は必要だと思いますか？"),
-    new OptionSelectSurveyRequest(
-        "あなたが食べて見たいのはどちらですか？",
-        new List<string> { "正統派芋煮", "庄内風芋煮" },
-        isMultiSelect: false
-    )
+    new FreeTextSurveyRequest(userQuestion.Trim(), 300)
 };
 
 for (int i = 0; i < surveys.Count; i++)
@@ -129,15 +131,15 @@ for (int i = 0; i < surveys.Count; i++)
     Console.WriteLine($"\n📋 アンケート {i + 1}/{surveys.Count} を実行中...");
     Console.WriteLine($"質問: {GetQuestionText(surveys[i])}");
     Console.WriteLine(new string('=', 50));
-    
+
     var result = await service.RunSurveyAsync(surveys[i]);
-    
+
     Console.WriteLine("=== Survey Results ===");
     Console.WriteLine($"Total Prompt Tokens: {result.Usage.PromptTokens}");
     Console.WriteLine($"Total Completion Tokens: {result.Usage.CompletionTokens}");
     Console.WriteLine($"Total Tokens: {result.Usage.TotalTokens}");
     Console.WriteLine();
-    
+
     foreach (var answer in result.Answers)
     {
         DisplayPersonaDetails(answer.Persona);
@@ -145,12 +147,7 @@ for (int i = 0; i < surveys.Count; i++)
         Console.WriteLine(new string('=', 80));
     }
     Console.WriteLine("========================");
-    
-    if (i < surveys.Count - 1)
-    {
-        Console.WriteLine("\n⏸️  次のアンケートまで3秒待機...");
-        await Task.Delay(3000);
-    }
+
 }
 
 // 質問文を取得するヘルパー関数
