@@ -8,7 +8,19 @@ public class SurveyResponse
     public UsageToken Usage { get; set; } = new UsageToken();
 }
 
-public record PersonaAnswer(PersonaRecord Persona ,string Answer);
+public class PersonaAnswer
+{
+    public PersonaRecord Persona { get; set; }
+    public string Answer { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty;
+
+    public PersonaAnswer(PersonaRecord persona, string answer, string reason)
+    {
+        Persona = persona;
+        Answer = answer;
+        Reason = reason;
+    }
+}
 
 public class UsageToken
 {

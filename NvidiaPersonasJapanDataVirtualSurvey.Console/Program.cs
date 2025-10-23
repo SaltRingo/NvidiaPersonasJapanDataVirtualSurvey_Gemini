@@ -126,6 +126,8 @@ var surveys = new List<ISurveyRequest>
     new FreeTextSurveyRequest(userQuestion.Trim(), 300)
 };
 
+SurveyResponse? finalResult = null;
+
 for (int i = 0; i < surveys.Count; i++)
 {
     Console.WriteLine($"\n📋 アンケート {i + 1}/{surveys.Count} を実行中...");
@@ -133,6 +135,7 @@ for (int i = 0; i < surveys.Count; i++)
     Console.WriteLine(new string('=', 50));
 
     var result = await service.RunSurveyAsync(surveys[i]);
+    finalResult = result;
 
     Console.WriteLine("=== Survey Results ===");
     Console.WriteLine($"Total Prompt Tokens: {result.Usage.PromptTokens}");
@@ -148,6 +151,35 @@ for (int i = 0; i < surveys.Count; i++)
     }
     Console.WriteLine("========================");
 
+}
+
+if (finalResult is not null)
+{
+    // CSV に結果を保存（UTF-8 with BOM）
+try
+{
+    var outFile = Path.Combine(Directory.GetCurrentDirectory(), "survey_results.csv");
+        using var fs = new FileStream(outFile, FileMode.Create, FileAccess.Write, FileShare.None);
+        using var sw = new StreamWriter(fs, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+        // ヘッダー
+        sw.WriteLine("Occupation,Answer,Reason");
+
+        foreach (var ans in finalResult.Answers)
+        {
+            var occupation = ans.Persona.Occupation?.Replace(',', '、').Replace("\n", " ") ?? string.Empty;
+            var a = ans.Answer?.Replace(',', '、').Replace("\n", " ") ?? string.Empty;
+            var r = ans.Reason?.Replace(',', '、').Replace("\n", " ") ?? string.Empty;
+            sw.WriteLine($"{occupation},{a},{r}");
+        }
+
+        sw.Flush();
+        Console.WriteLine($"保存しました: {outFile}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"CSV 書き出し時にエラー: {ex.Message}");
+}
 }
 
 // 質問文を取得するヘルパー関数
