@@ -84,10 +84,12 @@ public class SurveyService
             response.Usage.PromptTokens += inputTokens;
             response.Usage.CompletionTokens += outputTokens;
 
-            // APIレート制限対策のため、リクエスト間に小さな遅延を入れる
+            // APIレート制限対策のため、リクエスト間に遅延を入れる
             if (i < personaList.Count - 1)
             {
-                await Task.Delay(100); // 100ms待機
+                // 16人以上の対象なら各リクエスト間に4秒以上待つ（クォータ回避）
+                var delayMs = personaList.Count >= 16 ? 4000 : 100;
+                await Task.Delay(delayMs);
             }
         }
 
