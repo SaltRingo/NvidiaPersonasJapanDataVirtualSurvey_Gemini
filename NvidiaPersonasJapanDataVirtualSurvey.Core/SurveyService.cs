@@ -87,7 +87,7 @@ public class SurveyService
             // APIレート制限対策のため、リクエスト間に小さな遅延を入れる
             if (i < personaList.Count - 1)
             {
-                await Task.Delay(500); // 500ms待機
+                await Task.Delay(100); // 100ms待機
             }
         }
 
